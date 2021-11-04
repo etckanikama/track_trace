@@ -11,17 +11,9 @@ import pandas as pd
 import numpy as np
 
 
-url = "/content/asaka-detection-2021-10-06-02-15.geojson"
+url = "./content/asaka-detection-2021-10-06-02-15.geojson"
 plot_data = geopandas.read_file(url)
 # QGIS側のcoodinate(x,y)にあたる
-A = [139.616880,35.809627]
-B = [139.617143,35.809727]
-C = [139.617114,35.809787]
-D = [139.616855,35.809693]
-
-X = [139.6169047723411,35.80987541101256]
-Y = [139.6169155930408, 35.80973758359768]
-Z = [139.6168981293924, 35.80987571087801]
 
 pointA = Point(139.616880,35.809627)
 pointB = Point(139.617143,35.809727)
@@ -126,30 +118,22 @@ for i,(key,value) in enumerate(DC_dict.items()):
       DC_in[key] = Point(DC_dict[key].x,DC_dict[key].y)
       DC_in_time[key] = plot_data.iloc[key].timestamp
 
-print(DC_line)
+# # DA_dict = {}
+# # DA_time_dict = {}
+# # c = 0
+# # for i,(key,value) in enumerate(DC_dict.items()):
+# #   ans = CrossProduct(pointD.x, pointD.y, pointA.x, pointA.y, DC_dict[key].x, DC_dict[key].y)
+# #   if ans <= 0:
+# #     DA_dict[key] = Point(DC_dict[key].x,DC_dict[key].y) 
+# #     DA_time_dict[key] = DC_time_dict[key]
+# #     c +=1
 
 
-# DA_dict = {}
-# DA_time_dict = {}
-# c = 0
-# for i,(key,value) in enumerate(DC_dict.items()):
-#   ans = CrossProduct(pointD.x, pointD.y, pointA.x, pointA.y, DC_dict[key].x, DC_dict[key].y)
-#   if ans <= 0:
-#     DA_dict[key] = Point(DC_dict[key].x,DC_dict[key].y) 
-#     DA_time_dict[key] = DC_time_dict[key]
-#     c +=1
-
-print(type(plot_data.iloc[0].geometry))
-print(count)
-print(cnt)
-print(cn)
 
 mm = AB_line
 data_time = AB_in_time
 data_plot = AB_in
-# print(len(M0))
-# print(AB_line[M0_index])
-# print(M0)
+
 M_dict = {}
 distance = {}
 M0_index = sorted(AB_line_time.items(), key=lambda x:x[0])[0][0]
@@ -168,30 +152,33 @@ for data in distance_sorted:
     M0_index = data[0]
     break
 
-print(distance)
-print(next_point)
-
 L = math.sqrt((pointC.x - pointB.x)**2 + (pointC.y - pointB.y)**2)
-M = 0
-# while L >= M:
-new_distance = {}
-for j, (key1, value1) in enumerate(DC_in.items()):
-  new_distance[key1] = math.sqrt((DC_in[M0_index].x - value1.x)**2 + (DC_in[M0_index].y - value1.y)**2)
+M0 = 0
+gain_distance = 0
+time = 0
+while L >= gain_distance:
+  new_distance = {}
+  for j, (key1, value1) in enumerate(DC_in.items()):
+    new_distance[key1] = math.sqrt((DC_in[M0_index].x - value1.x)**2 + (DC_in[M0_index].y - value1.y)**2)
 
-m = []
-next_point = [625,1010]
-new_distance_sorted = sorted(new_distance.items(), key=lambda x:x[1])
-for i,data in enumerate(new_distance_sorted):
-    if data[0] not in next_point and data[1] != 0.0: 
-      next_point.append(data[0])
-      for j ,(key2, value2) in enumerate(DC_in.items()):
-        m.append(math.sqrt((DC_in[M0_index].x - DC_in[data[0]].x)**2 +(DC_in[M0_index].y - DC_in[data[0].y])**2))
-      M0_index = data[0]
-      break
+  new_distance_sorted = sorted(new_distance.items(), key=lambda x:x[1])
+  for i,data in enumerate(new_distance_sorted):
+      if data[0] not in next_point and data[1] != 0.0: 
+        next_point.append(data[0])
+
+        M0_index = data[0]
+        break
+
+  try:
+    time += float(DC_time_dict[next_point[M0]][17:26])
+  except:
+    pass
+  M1 = M0
+  M0 += 1
+  gain_distance += math.sqrt((DC_dict[next_point[M0]].x - DC_dict[next_point[M1]].x)**2 + (DC_dict[next_point[M0]].y - DC_dict[next_point[M1]].y)**2)
 
 
 
-print(m)
-print(new_distance_sorted)
-print(next_point)
-print(M0_index)
+print("トラックの通過時間",time/360)
+# print(gain_distance)
+# print(L)
